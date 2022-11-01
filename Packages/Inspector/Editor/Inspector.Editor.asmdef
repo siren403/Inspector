@@ -1,0 +1,19 @@
+{
+    "name": "Inspector.Editor",
+    "rootNamespace": "Inspector",
+    "references": [
+        "GUID:3ea85b9b39a77c9418861231e92c1760",
+        "GUID:eaaa5a8c92e64ef8a6f60ff043e94ade"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
