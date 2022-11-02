@@ -23,7 +23,12 @@ namespace Inspector
             var field = new PropertyField(property);
             if (attribute is FindAttribute findAttribute)
             {
-                if (IsArrayProperty(property)) // Array elements
+                // field.label = $"[*] {property.displayName}";
+                if (findAttribute.IsExperimental)
+                {
+                    FindComponentFromPath(property, findAttribute.Path, findAttribute.Name);
+                }
+                else if (IsArrayProperty(property)) // Array elements
                 {
                     FindComponents(property, findAttribute);
                 }
@@ -39,8 +44,142 @@ namespace Inspector
 
             return field;
 
-            bool IsArrayProperty(SerializedProperty p) => property.name == "data";
+            bool IsArrayProperty(SerializedProperty p) => p.name == "data";
         }
+
+        private void FindComponentFromPath(SerializedProperty property, string path, string name)
+        {
+            if (!IsNullProperty()) return;
+            if (!IsAttachableType())
+            {
+                // Debug.LogError($"find type is not component: {property.name}, {fieldInfo.FieldType.Name}");
+                return;
+            }
+
+            var targetObject = property.serializedObject.targetObject;
+            if (targetObject is not Component component) return;
+
+            var paths = string.IsNullOrWhiteSpace(path) ? Array.Empty<string>() : path.Split("/");
+
+            GameObject currentGameObject = component.gameObject;
+
+            var pathIndex = 0;
+
+            if (paths.Any() && paths[pathIndex] == ".")
+            {
+                pathIndex++;
+            }
+
+            while (pathIndex < paths.Length)
+            {
+                var currentPath = paths[pathIndex];
+
+                string findChildName = null;
+
+                if (!string.IsNullOrWhiteSpace(currentPath))
+                {
+                    findChildName = currentPath;
+
+                    if (pathIndex == paths.Length - 1)
+                    {
+                        if (TryFindChild(currentGameObject, findChildName, out var child))
+                        {
+                            findChildName = ConvertName();
+                            currentGameObject = child;
+                        }
+                        else
+                        {
+                            Debug.LogError($"not found last child: {property.name}, {findChildName}");
+                            return;
+                        }
+                    }
+                }
+                else if (pathIndex == paths.Length - 1)
+                {
+                    findChildName = ConvertName();
+                }
+
+                if (findChildName != null && TryFindChild(currentGameObject, findChildName, out var lastChild))
+                {
+                    currentGameObject = lastChild;
+                }
+                else
+                {
+                    Debug.LogError($"not found last child: {property.name}, {findChildName}");
+                    return;
+                }
+
+                pathIndex++;
+            }
+
+            if (currentGameObject == component.gameObject && fieldInfo.FieldType == typeof(GameObject))
+            {
+                fieldInfo.SetValue(targetObject, currentGameObject);
+                EditorGUIUtility.PingObject(currentGameObject);
+                Debug.LogError($"use this.gameobject -> {currentGameObject.name}.{property.name}");
+                return;
+            }
+
+            Object findObject = null;
+            var fieldType = fieldInfo.FieldType;
+            if (fieldType == typeof(GameObject))
+            {
+                findObject = currentGameObject;
+            }
+            else
+            {
+                findObject = currentGameObject.GetComponent(fieldType);
+                if (findObject == null)
+                {
+                    Debug.LogError($"not found component: {fieldType.Name}");
+                    EditorGUIUtility.PingObject(currentGameObject);
+                    return;
+                }
+            }
+
+            if (findObject != null)
+            {
+                fieldInfo.SetValue(targetObject, findObject);
+                Debug.Log($"find target: {property.name}");
+            }
+            else
+            {
+                Debug.LogError($"not found reference: {fieldType.Name}");
+            }
+
+            bool IsNullProperty()
+            {
+                return property.objectReferenceValue == null ||
+                       fieldInfo.GetValue(property.serializedObject.targetObject) == null;
+            }
+
+            string ConvertName()
+            {
+                return string.IsNullOrWhiteSpace(name)
+                    ? PascalToKebabCase(property.name)
+                    : name.Contains("-")
+                        ? name
+                        : PascalToKebabCase(name);
+            }
+
+            bool IsAttachableType()
+            {
+                return property.propertyType == SerializedPropertyType.ObjectReference &&
+                       (fieldInfo.FieldType == typeof(GameObject) || fieldInfo.FieldType.BaseType != typeof(Object));
+            }
+
+            bool TryFindChild(GameObject target, string childName, out GameObject child)
+            {
+                child = target.Child(childName);
+                if (child == null)
+                {
+                    Debug.LogError($"not found last child: {property.name}, {childName}");
+                }
+
+                return child != null;
+            }
+        }
+
 
         private void FindComponents(SerializedProperty property, FindAttribute findAttribute)
         {
