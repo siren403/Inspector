@@ -1,18 +1,20 @@
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Inspector;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace MetaRun.Editor
+namespace Inspector
 {
+#if !UNITY_2022
     [CustomEditor(typeof(Object), true, isFallback = true)]
+#else
+    [CustomEditor(typeof(Object), true)]
+#endif
     public class DefaultInspector : UnityEditor.Editor
     {
+#if !UNITY_2022
         private static VisualElement CreateScriptReadonlyField(SerializedProperty property)
         {
             var propertyField = new VisualElement {name = $"PropertyField:{property.propertyPath}"};
@@ -26,19 +28,20 @@ namespace MetaRun.Editor
             propertyField.Q(null, "unity-base-field__input")?.AddToClassList("unity-disabled");
             return propertyField;
         }
-
+#endif
         public override VisualElement CreateInspectorGUI()
         {
             var container = new VisualElement();
+#if !UNITY_2022
             var iterator = serializedObject.GetIterator();
-
+            
             if (iterator.NextVisible(true))
             {
                 do
                 {
                     var serializedProperty = iterator.Copy();
                     VisualElement propertyField;
-
+            
                     if (iterator.propertyPath == "m_Script" && serializedObject.targetObject != null)
                     {
                         propertyField = CreateScriptReadonlyField(serializedProperty);
@@ -48,10 +51,13 @@ namespace MetaRun.Editor
                         propertyField = new PropertyField(iterator.Copy())
                             {name = "PropertyField:" + iterator.propertyPath};
                     }
-
+            
                     container.Add(propertyField);
                 } while (iterator.NextVisible(false));
             }
+#else
+            InspectorElement.FillDefaultInspector(container, serializedObject, this);
+#endif
 
             #region Button
 
