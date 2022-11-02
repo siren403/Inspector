@@ -59,9 +59,47 @@ namespace Inspector
             var targetObject = property.serializedObject.targetObject;
             if (targetObject is not Component component) return;
 
-            var paths = string.IsNullOrWhiteSpace(path) ? Array.Empty<string>() : path.Split("/");
-
             GameObject currentGameObject = component.gameObject;
+            string[] paths = null;
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                paths = Array.Empty<string>();
+            }
+            else
+            {
+                if (path.StartsWith("/"))
+                {
+                    var removeRootPath = path.Substring(1);
+                    paths = string.IsNullOrWhiteSpace(removeRootPath)
+                        ? Array.Empty<string>()
+                        : removeRootPath.Split("/");
+
+                    var findName = paths.Any() ? paths.First() : ConvertName();
+                    var rootGameObject = currentGameObject.scene.GetRootGameObjects()
+                        .FirstOrDefault(_ => _.name == findName);
+                    if (rootGameObject == null)
+                    {
+                        Debug.LogError($"not found root gameobject: {findName}");
+                        return;
+                    }
+
+                    // rebuild path
+                    currentGameObject = rootGameObject;
+                    var removeFindNamePath = removeRootPath.Remove(0, findName.Length);
+                    if (removeFindNamePath.StartsWith("/"))
+                    {
+                        removeFindNamePath = removeFindNamePath.Remove(0, 1);
+                    }
+
+                    paths = string.IsNullOrWhiteSpace(removeFindNamePath)
+                        ? Array.Empty<string>()
+                        : removeFindNamePath.Split("/");
+                }
+                else
+                {
+                    paths = path.Split("/");
+                }
+            }
 
             var pathIndex = 0;
 

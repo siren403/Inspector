@@ -67,6 +67,21 @@ public class Sandbox : MonoBehaviour
     [SerializeField, Find("child/c/c1", "c2", isExperimental: true)]
     private BoxCollider2D c2Collider;
 
+    [Find("/", isExperimental: true)] [SerializeField]
+    private GameObject root;
+
+    [SerializeField, Find("/", "root", isExperimental: true)]
+    private AudioSource rootAudioSource;
+
+    [SerializeField, Find("/root", isExperimental: true)]
+    private GameObject rootA;
+
+    [SerializeField, Find("/root/root-b", isExperimental: true)]
+    private SpriteRenderer rootB1;
+
+    [SerializeField, Find("/root/root-b", "root-b1", isExperimental: true)]
+    private GameObject rootB1GameObject;
+
     #endregion
 
     [Button]
