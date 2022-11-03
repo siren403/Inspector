@@ -49,7 +49,8 @@ namespace Inspector
 
         private void FindComponentFromPath(SerializedProperty property, string path, string name)
         {
-            if (!IsNullProperty()) return;
+            var isArray = IsArrayProperty(property);
+            if (!IsNullProperty() && !isArray) return;
             if (!IsAttachableType())
             {
                 // Debug.LogError($"find type is not component: {property.name}, {fieldInfo.FieldType.Name}");
@@ -137,52 +138,113 @@ namespace Inspector
                     findChildName = ConvertName();
                 }
 
-                if (findChildName != null && TryFindChild(currentGameObject, findChildName, out var lastChild))
+                if (!isArray)
                 {
-                    currentGameObject = lastChild;
-                }
-                else
-                {
-                    Debug.LogError($"not found last child: {property.name}, {findChildName}");
-                    return;
+                    if (findChildName != null && TryFindChild(currentGameObject, findChildName, out var lastChild))
+                    {
+                        currentGameObject = lastChild;
+                    }
+                    else
+                    {
+                        Debug.LogError($"not found last child: {property.name}, {findChildName}");
+                        return;
+                    }
                 }
 
                 pathIndex++;
             }
 
-            if (currentGameObject == component.gameObject && fieldInfo.FieldType == typeof(GameObject))
-            {
-                fieldInfo.SetValue(targetObject, currentGameObject);
-                EditorGUIUtility.PingObject(currentGameObject);
-                Debug.LogError($"use this.gameobject -> {currentGameObject.name}.{property.name}");
-                return;
-            }
 
-            Object findObject = null;
-            var fieldType = fieldInfo.FieldType;
-            if (fieldType == typeof(GameObject))
+            if (isArray)
             {
-                findObject = currentGameObject;
-            }
-            else
-            {
-                findObject = currentGameObject.GetComponent(fieldType);
-                if (findObject == null)
+                var fieldName = property.propertyPath.Split(".").FirstOrDefault();
+                if (string.IsNullOrEmpty(fieldName)) return;
+
+                if (!_fieldToObjects.TryGetValue(fieldName, out var objects))
                 {
-                    Debug.LogError($"not found component: {fieldType.Name}");
-                    EditorGUIUtility.PingObject(currentGameObject);
-                    return;
+                    Type fieldType = null;
+                    if (fieldInfo.FieldType.Name.Contains("List"))
+                    {
+                        fieldType = fieldInfo.FieldType.GenericTypeArguments.First();
+                    }
+                    else if (fieldInfo.FieldType.Name.Contains("[]"))
+                    {
+                        fieldType = fieldInfo.FieldType.GetElementType();
+                    }
+
+                    if (fieldType == null) return;
+                    bool fieldTypeIsGameObject = fieldType == typeof(GameObject);
+
+                    if (fieldTypeIsGameObject)
+                    {
+                        objects = currentGameObject.Children()
+                            .Select(_ => _ as Object)
+                            .Where(_ => _ != null)
+                            .ToList();
+                    }
+                    else
+                    {
+                        objects = currentGameObject.Children()
+                            .Select(_ => _.GetComponent(fieldType) as Object)
+                            .Where(_ => _ != null)
+                            .ToList();
+                    }
+
+                    _fieldToObjects[fieldName] = objects;
+                }
+
+                var index = Convert.ToInt32(property.displayName.Split(" ").Last());
+                if (fieldInfo.GetValue(component) is IList list)
+                {
+                    if (index < objects.Count)
+                    {
+                        list[index] = objects[index];
+                    }
+
+                    if (index == list.Count - 1) // is last
+                    {
+                        _fieldToObjects.Remove(fieldName);
+                    }
                 }
             }
-
-            if (findObject != null)
-            {
-                fieldInfo.SetValue(targetObject, findObject);
-                Debug.Log($"find target: {property.name}");
-            }
             else
             {
-                Debug.LogError($"not found reference: {fieldType.Name}");
+                var fieldType = fieldInfo.FieldType;
+                bool fieldTypeIsGameObject = fieldType == typeof(GameObject);
+
+                if (currentGameObject == component.gameObject && fieldTypeIsGameObject)
+                {
+                    fieldInfo.SetValue(targetObject, currentGameObject);
+                    EditorGUIUtility.PingObject(currentGameObject);
+                    Debug.LogError($"use this.gameobject -> {currentGameObject.name}.{property.name}");
+                    return;
+                }
+
+                Object findObject = null;
+                if (fieldTypeIsGameObject)
+                {
+                    findObject = currentGameObject;
+                }
+                else
+                {
+                    findObject = currentGameObject.GetComponent(fieldType);
+                    if (findObject == null)
+                    {
+                        Debug.LogError($"not found component: {fieldType.Name}");
+                        EditorGUIUtility.PingObject(currentGameObject);
+                        return;
+                    }
+                }
+
+                if (findObject != null)
+                {
+                    fieldInfo.SetValue(targetObject, findObject);
+                    Debug.Log($"find target: {property.name}");
+                }
+                else
+                {
+                    Debug.LogError($"not found reference: {fieldType.Name}");
+                }
             }
 
             bool IsNullProperty()
@@ -205,6 +267,8 @@ namespace Inspector
                 return property.propertyType == SerializedPropertyType.ObjectReference &&
                        (fieldInfo.FieldType == typeof(GameObject) || fieldInfo.FieldType.BaseType != typeof(Object));
             }
+
+            bool IsArrayProperty(SerializedProperty p) => p.name == "data";
 
             bool TryFindChild(GameObject target, string childName, out GameObject child)
             {

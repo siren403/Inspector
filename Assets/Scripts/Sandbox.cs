@@ -82,6 +82,12 @@ public class Sandbox : MonoBehaviour
     [SerializeField, Find("/root/root-b", "root-b1", isExperimental: true)]
     private GameObject rootB1GameObject;
 
+    [SerializeField, Find(isExperimental: true)]
+    private GameObject[] childrenExp;
+
+    [SerializeField, Find("./elements", isExperimental: true)]
+    private GameObject[] gameObjectElements;
+
     #endregion
 
     [Button]

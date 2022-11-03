@@ -271,6 +271,7 @@ MonoBehaviour:
   children:
   - {fileID: 1762834133}
   - {fileID: 1618133659}
+  - {fileID: 919106158}
   self: {fileID: 67742042}
   selfSpriteRenderer: {fileID: 67742046}
   selfBoxCollider: {fileID: 67742045}
@@ -286,6 +287,11 @@ MonoBehaviour:
   rootA: {fileID: 1577719464}
   rootB1: {fileID: 41930178}
   rootB1GameObject: {fileID: 41930176}
+  childrenExp:
+  - {fileID: 1762834133}
+  - {fileID: 1618133659}
+  - {fileID: 919106158}
+  gameObjectElements: []
 --- !u!61 &67742045
 BoxCollider2D:
   m_ObjectHideFlags: 0
