@@ -220,7 +220,7 @@ GameObject:
   - component: {fileID: 67742046}
   - component: {fileID: 67742045}
   m_Layer: 0
-  m_Name: Sandbox
+  m_Name: self
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -284,14 +284,20 @@ MonoBehaviour:
   c2Collider: {fileID: 1384646602}
   root: {fileID: 1577719464}
   rootAudioSource: {fileID: 1577719466}
-  rootA: {fileID: 1577719464}
+  rootA: {fileID: 1995552899}
   rootB1: {fileID: 41930178}
   rootB1GameObject: {fileID: 41930176}
   childrenExp:
   - {fileID: 1762834133}
   - {fileID: 1618133659}
   - {fileID: 919106158}
-  gameObjectElements: []
+  gameObjectElements:
+  - {fileID: 561386893}
+  - {fileID: 1025270629}
+  - {fileID: 1000365465}
+  - {fileID: 478433981}
+  - {fileID: 202053188}
+  - {fileID: 887511947}
 --- !u!61 &67742045
 BoxCollider2D:
   m_ObjectHideFlags: 0

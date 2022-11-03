@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using Inspector;
 using UnityEngine;
 
@@ -10,7 +8,7 @@ public class Sandbox : MonoBehaviour
     [Find("/root-game-object"), SerializeField]
     private GameObject rootChild;
 
-    [Find, SerializeField] private GameObject target;
+    [Find("./"), SerializeField] private GameObject target;
 
     [Find("/", name: nameof(rootGameObject)), SerializeField]
     private SpriteRenderer rootSpriteRenderer;
@@ -18,77 +16,72 @@ public class Sandbox : MonoBehaviour
     [Find("/root-game-object", name: nameof(rootChild)), SerializeField]
     private SpriteRenderer rootChildSpriteRenderer;
 
-    // [Find("elements"), SerializeField] private GameObject[] elements;
     [Find("elements"), SerializeField] private SpriteRenderer[] elements;
     [Find, SerializeField] private GameObject[] children;
 
 
     #region self
 
-    [SerializeField, Find(isExperimental: true)]
-    private GameObject self;
+    [SerializeField, Find()] private GameObject self;
 
-    [SerializeField, Find(path: ".", isExperimental: true)]
-    private SpriteRenderer selfSpriteRenderer;
+    [SerializeField, Find(path: ".")] private SpriteRenderer selfSpriteRenderer;
 
-    [SerializeField, Find(isExperimental: true)]
-    private BoxCollider2D selfBoxCollider;
+    [SerializeField, Find()] private BoxCollider2D selfBoxCollider;
 
     // not found component
-    // [SerializeField, Find(isExperimental: true)]
+    // [SerializeField, Find()]
     // private AudioSource selfAudioSource;
 
     // not component type
-    // [SerializeField, Find(isExperimental: true)]
+    // [SerializeField, Find()]
     // private AudioClip selfAudioClip;
 
     #endregion
 
     #region child
 
-    [SerializeField, Find("./", isExperimental: true)]
-    private GameObject child;
+    [SerializeField, Find("./")] private GameObject child;
 
-    [SerializeField, Find("./", nameof(child), isExperimental: true)]
+    [SerializeField, Find("./", nameof(child))]
     private SpriteRenderer childSpriteRenderer;
 
-    [SerializeField, Find("child/a", isExperimental: true)]
-    private GameObject a1;
+    [SerializeField, Find("child/a")] private GameObject a1;
 
-    [SerializeField, Find("child/b", isExperimental: true)]
-    private BoxCollider2D b1;
+    [SerializeField, Find("child/b")] private BoxCollider2D b1;
 
-    [SerializeField, Find("child/b", "b1", isExperimental: true)]
+    [SerializeField, Find("child/b", "b1")]
     private GameObject b1GameObject;
 
-    [SerializeField, Find("child/c/c1", isExperimental: true)]
-    private GameObject c2;
+    [SerializeField, Find("child/c/c1")] private GameObject c2;
 
-    [SerializeField, Find("child/c/c1", "c2", isExperimental: true)]
+    [SerializeField, Find("child/c/c1", "c2")]
     private BoxCollider2D c2Collider;
 
-    [Find("/", isExperimental: true)] [SerializeField]
-    private GameObject root;
+    #endregion
 
-    [SerializeField, Find("/", "root", isExperimental: true)]
-    private AudioSource rootAudioSource;
+    #region root
 
-    [SerializeField, Find("/root", isExperimental: true)]
-    private GameObject rootA;
+    [Find("/")] [SerializeField] private GameObject root;
 
-    [SerializeField, Find("/root/root-b", isExperimental: true)]
-    private SpriteRenderer rootB1;
+    [SerializeField, Find("/", "root")] private AudioSource rootAudioSource;
 
-    [SerializeField, Find("/root/root-b", "root-b1", isExperimental: true)]
+    [SerializeField, Find("/root")] private GameObject rootA;
+
+    [SerializeField, Find("/root/root-b")] private SpriteRenderer rootB1;
+
+    [SerializeField, Find("/root/root-b", "root-b1")]
     private GameObject rootB1GameObject;
 
-    [SerializeField, Find(isExperimental: true)]
-    private GameObject[] childrenExp;
+    #endregion
 
-    [SerializeField, Find("./elements", isExperimental: true)]
-    private GameObject[] gameObjectElements;
+    #region IList
+
+    [SerializeField, Find()] private GameObject[] childrenExp;
+
+    [SerializeField, Find("./elements")] private GameObject[] gameObjectElements;
 
     #endregion
+
 
     [Button]
     public void ResetExperimental()

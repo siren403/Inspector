@@ -9,8 +9,6 @@ namespace Inspector
         public string Path { get; private set; }
         public string Name { get; private set; }
 
-        public bool IsExperimental { get; private set; } = false;
-
         public FindAttribute()
         {
             Path = string.Empty;
@@ -29,11 +27,5 @@ namespace Inspector
             Name = name ?? string.Empty;
         }
 
-        public FindAttribute(string path = null, string name = null, bool isExperimental = false)
-        {
-            Path = path ?? string.Empty;
-            Name = name ?? string.Empty;
-            IsExperimental = isExperimental;
-        }
     }
 }
