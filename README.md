@@ -1,5 +1,9 @@
 # Inspector
 
+UPM from git
+```
+https://github.com/qkrsogusl3/UActions.git?path=Packages/Inspector
+```
 
 ## Find
 
