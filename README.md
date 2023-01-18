@@ -1,5 +1,10 @@
 # Inspector
 
+
+## Find
+
+PropertyDrawer를 통해 레퍼런스를 찾아 세팅.
+
 ```text
 root
     root-a
